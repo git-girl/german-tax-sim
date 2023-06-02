@@ -31,3 +31,11 @@ This is made with scientific purposes in mind. To the best of my knowledge there
 aren't any institutes publishing their simulation models for anyone to use. 
 This creates bad barriers for research.
 
+## Usage 
+
+this is a TODO but it must include 
+
+find a set of all xml files here: 
+
+they arent included because i added a license and these files arent by me
+
