@@ -23,6 +23,19 @@ XML Structure:
     - METHOD 
     - ... 
 
+XML Tag Attrib List: 
+['value',
+ 'versionNummer',
+ 'method',
+ 'regex_transform',
+ 'version',
+ 'name',
+ 'regex_test',
+ 'exec',
+ 'expr',
+ 'type',
+ 'default']
+
 ## Plan 
 
 I have already published a (similar tool)[https://github.com/git-girl/bmf-taxcalculator-csv].  
