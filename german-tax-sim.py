@@ -1,4 +1,6 @@
 import transpiler
+import uuid
+import sys
 
 def main():
     """
@@ -12,6 +14,25 @@ def main():
     # TODO: shouldnt this be in __init.py__ if it is the entry point entry point?
     # def main(xml_file_path: str, df: pd.DataFrame, options: Dict):
 
-    transpiler.transpile("xml-codes/Lohnsteuer2020.xml.xhtml")
+    code = transpiler.transpile("xml-codes/Lohnsteuer2020.xml.xhtml")
+    # NOTE: this back and forth to file serves as a means to save the transpiled code
+    filepath = write_code_to_file(code)
+    exec_file(filepath)
+
+
+
+def write_code_to_file(code): 
+    filepath = '.generated/' + str(uuid.uuid4()) + '.py'
+    with open(filepath, 'w') as file: 
+        file.write(code)
+
+    return filepath
+
+def exec_file(filepath): 
+    with open(filepath) as file:
+        code = file.read()
+    exec(code)
 
 main()
+
+

@@ -21,7 +21,7 @@ def transpile(xml_file_path):
     # print_uniq_tags(root)
     # print_xml_structure(root)
     py_main = transpile_main(main_xml_tag)
-    print(py_main)
+    return py_main
     # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
 
@@ -49,16 +49,16 @@ def print_tags(element):
 
 # in the format there are the attibutes 
 #['value',
-  # 'versionNummer',
-  # 'method',
-  # 'regex_transform',
-  # 'version',
-  # 'name',
-  # 'regex_test',
-  # 'exec',
-  # 'expr',
-  # 'type',
-  # 'default']
+# 'versionNummer',
+# 'method',
+# 'regex_transform',
+# 'version',
+# 'name',
+# 'regex_test',
+# 'exec',
+# 'expr',
+# 'type',
+# 'default']
 def print_uniq_attrs(root):
     unique_attributes = set()
 
@@ -91,3 +91,5 @@ def print_xml_structure(element, level=0):
     if level < 2:
         for child in element:
             print_xml_structure(child, level + 1)
+
+
