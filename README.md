@@ -1,5 +1,28 @@
 # EARLY DEV: German Tax Simulation Tool 
 
+## DevNotes
+
+XML Structure: 
+- PAP 
+  - VARIABLES 
+    - INPUTS 
+    - OUTPUTS  type STANDARD 
+      - OUTPUT 
+      - ... 
+    - OUTPUTS  type DBA 
+      - OUTPUT 
+      - ... 
+    - INTERNALS  
+      - INTERNAL 
+      - ... 
+  - CONSTANTS 
+    - CONSTANT
+    - ... 
+  - METHODS 
+    - MAIN 
+    - METHOD 
+    - ... 
+
 ## Plan 
 
 I have already published a (similar tool)[https://github.com/git-girl/bmf-taxcalculator-csv].  
