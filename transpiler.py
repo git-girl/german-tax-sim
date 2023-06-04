@@ -93,9 +93,6 @@ def xml_var_to_np(xml_element):
     check_xml_var(xml_element)
     xml_dtype = xml_element.attrib.get('type').rstrip()
     array_flag, dtype = translate_type(xml_dtype)
-    # NOTE: xml_value might be a table value so
-    # translate type must handle tables
-    print(array_flag, dtype)
 
     xml_value = xml_element.attrib.get('value')
 
@@ -107,10 +104,16 @@ def xml_var_to_np(xml_element):
         for xml_value in xml_values:
             values.append(strip(xml_value, dtype))
 
-        print(values)
-    elif not array_flag:
+        values = "[" + ", ".join(values) + "]"
+
+        return "np.array(" + values + ", dtype=" + dtype + ")"
+
+    if not array_flag:
         value = strip(xml_value, dtype)
-        print(value)
+
+        return "np." + dtype + "(" + value + ")"
+
+    raise ValueError("Something went wrong with the array flag. True and False where checked")
 
 
 # TODO: these testcases:
@@ -142,9 +145,9 @@ def strip(xml_value, dtype):
                 # case 3 BigDecimal.THISVALUE is a String that needs to be cast
                 if i == len(regex_patterns):
                     weird_consts = {
-                        "ONE": 1,
-                        "TWO": 2,
-                        "THREE": 3,
+                        "ONE": "1",
+                        "TWO": "2",
+                        "THREE": "3",
                     }
 
                     if weird_consts[value]:
