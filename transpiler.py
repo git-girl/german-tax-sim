@@ -28,7 +28,7 @@ def transpile(xml_file_path):
     py_consts = transpile_constants(find_uniq_tag('CONSTANTS', tree))
     py_main = transpile_main(find_uniq_tag('MAIN', tree))
 
-    return py_main
+    return py_consts + py_main
     # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
 
@@ -72,7 +72,7 @@ def transpile_main(main_root):
     # print("TODO")
 
 def transpile_constants(constants_root):
-    print('TODO')
+    return "a = 3"
 
 
 # def check_file(xml_file_path):

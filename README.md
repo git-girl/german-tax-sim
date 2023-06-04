@@ -1,10 +1,5 @@
 # EARLY DEV: German Tax Simulation Tool 
 
-# Same as in CICD
-lint:	
-	# NOTE: $$ because Makefile
-	pylint $$(git ls-files '*.py')
-
 ## DevNotes
 
 > Important: is it good that i differentiate between transpiling different blocks? 

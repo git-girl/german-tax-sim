@@ -1,6 +1,5 @@
-import transpiler
 import uuid
-import sys
+import transpiler
 
 def main():
     """
@@ -21,18 +20,20 @@ def main():
 
 # TODO: Use a template file that structures the code a bit maybe
 # and handles imports and stuff like that
-def write_code_to_file(code): 
+def write_code_to_file(code):
+    """
+    Writes string to a file with uuid4() name in ./generated and returns the filepath
+    """
     filepath = '.generated/' + str(uuid.uuid4()) + '.py'
-    with open(filepath, 'w') as file: 
+    with open(filepath, 'w') as file:
         file.write(code)
 
     return filepath
 
-def exec_file(filepath): 
+def exec_file(filepath):
+    """Run file."""
     with open(filepath) as file:
         code = file.read()
-    exec(code)
+    # exec(code)
 
 main()
-
-
