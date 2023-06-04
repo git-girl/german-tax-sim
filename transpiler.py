@@ -8,9 +8,9 @@ import re
 import xml.etree.ElementTree as ET
 
 TYPE_DICT = {
-        'double': 'np.float64()',
-        'BigDecimal': 'np.float64()',
-        'int': 'np.int16()'
+        'double': 'float64',
+        'BigDecimal': 'float64',
+        'int': 'int16'
         }
 
 def transpile(xml_file_path):
@@ -100,16 +100,18 @@ def xml_var_to_np(xml_element):
     xml_value = xml_element.attrib.get('value')
 
     if array_flag:
+        # TODO: this 3 lines should use a regular expression and finditer()
         xml_table_arr = re.search(r"\{(.*?)\}", xml_value)
         xml_values = xml_table_arr.group(1).split(",")
+        values = []
         for xml_value in xml_values:
-            value = strip(xml_value, dtype)
+            values.append(strip(xml_value, dtype))
+
+        print(values)
     elif not array_flag:
         value = strip(xml_value, dtype)
-    print(value)
+        print(value)
 
-    # if not array_flag:
-        # assign dtype.new(value)
 
 # TODO: these testcases:
 # BigDecimal.THISVALUE
@@ -118,20 +120,48 @@ def xml_var_to_np(xml_element):
 def strip(xml_value, dtype):
     """Takes xml_value and dtype, returns actual numpy variable"""
 
-    if dtype == 'np.float64()':
+    if dtype == 'float64':
+
+        # 1st -> the thing in the () after BigDecimal.<space>
+        # 2nd -> the thing in the () after BigDecimal
+        # 3rd -> anything after BigDecimal.
         regex_patterns = [
-                r"BigDecimal\.(\w+)",
-                r"BigDecimal\.valueOf\((\w+)\)",
-                r"BigDecimal\((\w+)\)"
+                r"BigDecimal\.valueOf\s+\((.*?)\)",
+                r"BigDecimal\((.*?)\)",
+                r"BigDecimal\.(.*)"
                 ]
 
+        i = 1
         for regex in regex_patterns:
             re_res = re.search(regex, xml_value)
             if re_res:
                 value = re_res.group(1)
-                return value
+                if i < len(regex_patterns):
+                    return value
 
-        # if no match:
+                # case 3 BigDecimal.THISVALUE is a String that needs to be cast
+                if i == len(regex_patterns):
+                    weird_consts = {
+                        "ONE": 1,
+                        "TWO": 2,
+                        "THREE": 3,
+                    }
+
+                    if weird_consts[value]:
+                        return weird_consts[value]
+
+                    # else weird const not found
+                    raise ValueError(
+                        """
+                        Please dont use BigDecimal.FOUR or stuff like this
+                        Only BigDecimal.ONE through THREE are supported.
+                        BMF only uses ONE to my knowledge
+                        """
+                        )
+
+            i += 1
+
+        # if no match
         raise TypeError(
                 "Got float64 dtype, but value was not matched by regex value was: "
                 , xml_value)
