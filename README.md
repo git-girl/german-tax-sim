@@ -22,24 +22,25 @@
   be supported with theoretically infinite occurrences.
 
 XML Structure: 
-- PAP 
-  - VARIABLES 
-    - INPUTS 
-    - OUTPUTS  type STANDARD 
+- [ ] PAP 
+  - [ ] VARIABLES 
+    - [ ] INPUTS 
+    - [ ] OUTPUTS  type STANDARD 
       - OUTPUT 
       - ... 
-    - OUTPUTS  type DBA 
+    - [ ] OUTPUTS  type DBA 
       - OUTPUT 
       - ... 
-    - INTERNALS  
+    - [x] INTERNALS  
       - INTERNAL 
       - ... 
-  - CONSTANTS 
+  - [x] CONSTANTS 
     - CONSTANT
     - ... 
-  - METHODS 
-    - MAIN 
-    - METHOD 
+  - [ ] METHODS 
+    - [ ] MAIN  
+          main still needs some work on properly parsing the EVALS
+    - [ ] METHOD 
     - ... 
 
 XML Tag Attrib List: 
