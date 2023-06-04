@@ -1,21 +1,12 @@
 # EARLY DEV: German Tax Simulation Tool 
 
-# ROCm cupy 
-$ sudo pacman -S hipblas hipsparse rocsparse rocrand rocthrust rocsolver rocfft hipcub rocprim rccl
+> The PAP Documentation goes back until 2007 so until there there should be XML files
 
-get rocm version 
-  yay -Q --info rocm-hip-sdk rocm-opencl-sdk 
+> DANGER NOTE: note that the Format of the XML TABLES for example TAB1 on the Versorgungsbezuege starts at index1 for the first 
+> 5 years (so in 2020 the first 5 years are)
+- this just means that if you are modifying the table you will need to include a BigDecimal.valueOf(0.0) at index 1
 
-install proper cupy version using 
-  conda run pip install cupy-5-0
 
-Building from source setting: 
-also requires roctracer
-gfx90c
-
-export CUPY_INSTALL_USE_HIP=1
-export ROCM_HOME=/opt/rocm
-export HCC_AMDGPU_TARGET=gfx90c
  
 
 ## DevNotes
