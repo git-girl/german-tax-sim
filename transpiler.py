@@ -11,24 +11,32 @@ def transpile(xml_file_path):
     tree = ET.parse(xml_file_path)
     root = tree.getroot()
 
-    main_elements = tree.findall('.//MAIN') 
-    if len(main_elements) == 1:
-        main_xml_tag = main_elements[0]
-    else: 
-        sys.exit("ERROR: Expected exactly one <MAIN> tag.")
     # print_tags(root)
     # print_uniq_attrs(root)
     # print_uniq_tags(root)
     # print_xml_structure(root)
-    py_main = transpile_main(main_xml_tag)
+
+    # This should support multiple constants blocks
+    py_consts = transpile_constants(find_uniq_tag('CONSTANTS', tree))
+    py_main = transpile_main(find_uniq_tag('MAIN', tree))
+
     return py_main
     # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
 
-def transpile_main(xml_main_tag):
+def find_uniq_tag(tag_name, tree):
+    """Raise error if tag is fond more then once. Otherwise return the tag."""
+    tag_elements = tree.findall('.//' + tag_name)
+    if len(tag_elements) == 1: 
+        uniq_tag = tag_elements[0] 
+        return uniq_tag
+    else: 
+        sys.exit("ERROR: Expected exactly one <",tag_name,"> tag. Found: ", len(tag_elements))
+
+def transpile_main(main_root):
     python_code = []
 
-    for element in xml_main_tag:
+    for element in main_root:
             if element.tag == 'EXECUTE':
                 method = element.attrib.get('method', '').lower()
                 python_code.append(f"{method}()")
@@ -37,6 +45,17 @@ def transpile_main(xml_main_tag):
                 python_code.append(exec_code)
     
     return '\n'.join(python_code)
+
+def transpile_variables(variables_root): 
+    # find the Inputs tag 
+    # find the outputs standard 
+    # find the outputs DBA 
+    # find the internals
+    print("TODO")
+
+def transpile_constants(constants_root): 
+    print('TODO')
+
 
 def check_file(xml_file_path): 
     # TODO: verify xml integrity

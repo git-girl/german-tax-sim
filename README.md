@@ -2,6 +2,14 @@
 
 ## DevNotes
 
+> Important: is it good that i differentiate between transpiling different blocks? 
+- My worry is that I'm introducing a lot of very specific things and that with minor changes 
+  like another CONSTANTS block or something like that that I will make everything error prone 
+  down the line
+
+- There can be only 1 MAIN tag and that is required. Other 1st level tags should 
+  be supported with theoretically infinite occurrences.
+
 XML Structure: 
 - PAP 
   - VARIABLES 

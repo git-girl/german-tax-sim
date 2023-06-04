@@ -1,2 +1,4 @@
 # Make sure no xml-codes of BMF are uploaded with the License i think thats illegal
 xml-codes
+.generated
+__pycache__

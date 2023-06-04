@@ -19,8 +19,8 @@ def main():
     filepath = write_code_to_file(code)
     exec_file(filepath)
 
-
-
+# TODO: Use a template file that structures the code a bit maybe
+# and handles imports and stuff like that
 def write_code_to_file(code): 
     filepath = '.generated/' + str(uuid.uuid4()) + '.py'
     with open(filepath, 'w') as file: 
