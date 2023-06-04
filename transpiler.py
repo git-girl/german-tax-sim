@@ -1,16 +1,24 @@
+"""
+Handles parsing parsing an XML File and writing that to python using cupy. 
+Entrypoint is transpile(xml_file_path)
+"""
+
 import xml.etree.ElementTree as ET
 import sys
 # import xml
 
-def transpile(xml_file_path): 
-    """Entry point into the transpiling part, takes in a file path writes to a file in ./.generated"""
+def transpile(xml_file_path):
+    """
+    Entry point into the transpiling part, 
+    takes in a file path writes to a file in ./.generated
+    """
     print(xml_file_path)
 
-    check_file(xml_file_path)
+    # check_file(xml_file_path)
 
     tree = ET.parse(xml_file_path)
-    root = tree.getroot()
 
+    # root = tree.getroot()
     # print_tags(root)
     # print_uniq_attrs(root)
     # print_uniq_tags(root)
@@ -25,48 +33,58 @@ def transpile(xml_file_path):
     # TODO: check_all_methods_present()
 
 def find_uniq_tag(tag_name, tree):
-    """Raise error if tag is fond more then once. Otherwise return the tag."""
+    """
+    Finds uniq tag within tree. Raises error if none found or not unique.
+
+    Args:
+        tag_name (str): the Tag name to search for.
+        tree (xml.etree.ElementTree): The tree to search through.
+
+    Returns:
+        xml.etree.ElementTree.Element
+    """
     tag_elements = tree.findall('.//' + tag_name)
-    if len(tag_elements) == 1: 
-        uniq_tag = tag_elements[0] 
+    if len(tag_elements) == 1:
+        uniq_tag = tag_elements[0]
         return uniq_tag
-    else: 
-        sys.exit("ERROR: Expected exactly one <",tag_name,"> tag. Found: ", len(tag_elements))
+
+    sys.exit("ERROR: Expected exactly one <",tag_name,"> tag. Found: ", len(tag_elements))
 
 def transpile_main(main_root):
+    """Transpile the main function, this has some different rules then other bits"""
     python_code = []
 
     for element in main_root:
-            if element.tag == 'EXECUTE':
-                method = element.attrib.get('method', '').lower()
-                python_code.append(f"{method}()")
-            elif element.tag == 'EVAL':
-                exec_code = element.attrib.get('exec', '').lower()
-                python_code.append(exec_code)
-    
+        if element.tag == 'EXECUTE':
+            method = element.attrib.get('method', '').lower()
+            python_code.append(f"{method}()")
+        elif element.tag == 'EVAL':
+            exec_code = element.attrib.get('exec', '').lower()
+            python_code.append(exec_code)
+
     return '\n'.join(python_code)
 
-def transpile_variables(variables_root): 
-    # find the Inputs tag 
-    # find the outputs standard 
-    # find the outputs DBA 
+# def transpile_variables(variables_root):
+    # find the Inputs tag
+    # find the outputs standard
+    # find the outputs DBA
     # find the internals
-    print("TODO")
+    # print("TODO")
 
-def transpile_constants(constants_root): 
+def transpile_constants(constants_root):
     print('TODO')
 
 
-def check_file(xml_file_path): 
+# def check_file(xml_file_path):
     # TODO: verify xml integrity
-    print("")
 
 def print_tags(element):
+    """Takes in single element and prints its child tags"""
     print(element.tag)  # Print the tag of the current element
     for child in element:
         print_tags(child)  # Recursively print tags of child elements
 
-# in the format there are the attibutes 
+# in the format there are the attibutes
 #['value',
 # 'versionNummer',
 # 'method',
@@ -79,6 +97,7 @@ def print_tags(element):
 # 'type',
 # 'default']
 def print_uniq_attrs(root):
+    """Prints the Set of children attributes, takes in element, returns nothing"""
     unique_attributes = set()
 
     # Iterate over the elements in the tree
@@ -92,6 +111,7 @@ def print_uniq_attrs(root):
     print(list(unique_attributes))
 
 def print_uniq_tags(root):
+    """Prints the Set of children tags, takes in element, returns nothing"""
     unique_tags = set()
 
     # Iterate over the elements in the tree
@@ -103,6 +123,10 @@ def print_uniq_tags(root):
     print(list(unique_tags))
 
 def print_xml_structure(element, level=0):
+    """
+    Util: Print the xml structure 2 levels deep. 
+    Takes in element and level to start at. Returns nothing
+    """
     # Print the current element's tag with proper indentation
     print('  ' * level + element.tag)
 
@@ -110,5 +134,3 @@ def print_xml_structure(element, level=0):
     if level < 2:
         for child in element:
             print_xml_structure(child, level + 1)
-
-
