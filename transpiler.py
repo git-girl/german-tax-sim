@@ -4,8 +4,9 @@ Entrypoint is transpile(xml_file_path)
 """
 
 import xml.etree.ElementTree as ET
+import typedict
 import sys
-# import xml
+# import cupy
 
 def transpile(xml_file_path):
     """
@@ -20,7 +21,7 @@ def transpile(xml_file_path):
 
     # root = tree.getroot()
     # print_tags(root)
-    # print_uniq_attrs(root)
+    print_uniq_types(tree.getroot())
     # print_uniq_tags(root)
     # print_xml_structure(root)
 
@@ -72,6 +73,8 @@ def transpile_main(main_root):
     # print("TODO")
 
 def transpile_constants(constants_root):
+    """Takes a single constants root element and transpiles to variables"""
+
     return "a = 3"
 
 
@@ -109,6 +112,16 @@ def print_uniq_attrs(root):
 
     # Print the list of unique attributes
     print(list(unique_attributes))
+
+def print_uniq_types(element):
+    """Prints the Set of children's type attributes, takes in element, returns nothing"""
+    unique_types = set()
+    for child in element.iter():
+        var_type = child.attrib.get('type')
+        if var_type is not None:
+            unique_types.add(var_type)
+
+    print(unique_types)
 
 def print_uniq_tags(root):
     """Prints the Set of children tags, takes in element, returns nothing"""

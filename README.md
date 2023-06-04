@@ -1,6 +1,26 @@
 # EARLY DEV: German Tax Simulation Tool 
 
+# ROCm cupy 
+$ sudo pacman -S hipblas hipsparse rocsparse rocrand rocthrust rocsolver rocfft hipcub rocprim rccl
+
+get rocm version 
+  yay -Q --info rocm-hip-sdk rocm-opencl-sdk 
+
+install proper cupy version using 
+  conda run pip install cupy-5-0
+
+Building from source setting: 
+also requires roctracer
+gfx90c
+
+export CUPY_INSTALL_USE_HIP=1
+export ROCM_HOME=/opt/rocm
+export HCC_AMDGPU_TARGET=gfx90c
+ 
+
 ## DevNotes
+
+- TODO: write something on installing cuda for your cuda version i think that is an issue in adoption 
 
 > Important: is it good that i differentiate between transpiling different blocks? 
 - My worry is that I'm introducing a lot of very specific things and that with minor changes 

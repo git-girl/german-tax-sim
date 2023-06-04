@@ -1,7 +1,9 @@
+run: 
+	@conda run -n german-tax-sim python german_tax_sim.py
 # Same as in CICD
 lint:	
 	# NOTE: $$ because Makefile
-	pylint $$(git ls-files '*.py')
+	@conda run pylint $$(git ls-files '*.py')
 
 doc: 
 	sphinx-apidoc -f -o docs/source .
