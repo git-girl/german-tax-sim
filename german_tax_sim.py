@@ -17,6 +17,7 @@ def main():
     # print(code)
     # NOTE: this back and forth to file serves as a means to save the transpiled code
     filepath = write_code_to_file(code)
+    print(filepath)
     exec_file(filepath)
 
 # TODO: Use a template file that structures the code a bit maybe
@@ -35,6 +36,7 @@ def exec_file(filepath):
     """Run file."""
     with open(filepath) as file:
         code = file.read()
+
     exec(code)
 
 main()

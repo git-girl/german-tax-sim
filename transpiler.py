@@ -31,18 +31,24 @@ def transpile(xml_file_path):
     # print_xml_structure(root)
 
     # This should support multiple constants blocks
-    py_imports = "import numpy as np \n"
+    py_imports = "import numpy as np\n"
     py_consts = transpile_constants(find_uniq_tag('CONSTANTS', tree))
     py_main = transpile_main(find_uniq_tag('MAIN', tree))
+    py_internals = transpile_internals(find_uniq_tag('INTERNALS', tree))
 
     python_code = [
             py_imports,
             py_consts,
+            py_internals,
             py_main
             ]
     return '\n'.join(python_code)
     # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
+
+
+def adpot_inputs(inputs_root):
+    """Adopts the input variables and their dtypes to be the main entry parameters"""
 
 def find_uniq_tag(tag_name, tree):
     """
@@ -64,48 +70,76 @@ def find_uniq_tag(tag_name, tree):
 
 def transpile_main(main_root):
     """Transpile the main function, this has some different rules then other bits"""
-    python_code = [
-            "\n # main \n"
+    main_method = [
+            "\n # main\n"
             ]
 
     for element in main_root:
         if element.tag == 'EXECUTE':
             method = element.attrib.get('method', '').lower()
-            python_code.append(f"{method}()")
+            main_method.append(f"{method}()")
+
+        # TODO : there is an issue here and thense need to get parsed properly
         elif element.tag == 'EVAL':
             exec_code = element.attrib.get('exec', '').lower()
-            python_code.append(exec_code)
+            main_method.append(exec_code)
 
-    return '\n'.join(python_code)
-
-# def transpile_variables(variables_root):
-    # find the Inputs tag
-    # find the outputs standard
-    # find the outputs DBA
-    # find the internals
-    # print("TODO")
+    return '\n'.join(main_method)
 
 def transpile_constants(constants_root):
     """Takes a single constants root element and transpiles its children to variables"""
 
     constants_defitions = [
-            "\n # constants_defitions \n"
+            "\n # constants_defitions\n"
             ]
 
     for xml_element in constants_root:
         if not xml_element.tag == 'CONSTANT':
             raise ValueError("Child in CONSTANTS node was not of tag type CONSTANT")
 
-        right_side = xml_var_to_right_side_expr(xml_element)
+        right_side = xml_var_to_right_side_expr(xml_element, check_for_value_attr=True)
         left_side = xml_element.attrib.get('name') + " = "
 
         constants_defitions.append(left_side + right_side)
 
     return '\n'.join(constants_defitions)
 
-def xml_var_to_right_side_expr(xml_element):
-    """Takes in xml element with attrib type and value and transforms it into a numpy value"""
-    check_xml_var(xml_element)
+# TODO: test case internal has a table
+def transpile_internals(internals_root):
+    """
+    similar to transpile constants transpiles the internals to numpy vars
+    sets all right sides to float64 0.0
+    """
+
+    internals_definitions = [
+            "\n # internals_definitions\n"
+            ]
+    for xml_element in internals_root:
+        if not xml_element.tag == 'INTERNAL':
+            raise ValueError("Child in INTERNAL node was not of tag type INTERNAL")
+
+        xml_dtype = xml_element.attrib.get('type').rstrip()
+
+        if xml_dtype == 'BigDecimal':
+            right_side = "np.float64(0.0)"
+        elif xml_dtype == 'BigDecimal[]':
+            right_side  == "np.array([], dtype=float64"
+
+        left_side = xml_element.attrib.get('name') + " = "
+
+        internals_definitions.append(left_side + right_side)
+
+    return '\n'.join(internals_definitions)
+
+def xml_var_to_right_side_expr(xml_element, check_for_value_attr):
+    """
+    Takes in xml element with attrib type and value and transforms it into a numpy value,
+    The check_for_value_attr flag determines raising error on element has no value attrib
+    to assign a float64 value of 0.0 use set_right_side_zero()
+    """
+
+    check_xml_var(xml_element, check_for_value_attr=check_for_value_attr)
+
     xml_dtype = xml_element.attrib.get('type').rstrip()
     array_flag, dtype = translate_type(xml_dtype)
 
@@ -116,6 +150,9 @@ def xml_var_to_right_side_expr(xml_element):
         xml_table_arr = re.search(r"\{(.*?)\}", xml_value)
         xml_values = xml_table_arr.group(1).split(",")
         values = []
+
+        # TODO: SET THE VALUES DEPENDING ON check_for_value_attr 
+
         for xml_value in xml_values:
             values.append(strip(xml_value, dtype))
 
@@ -217,10 +254,14 @@ def translate_type(xml_dtype):
     return [array_flag, dtype]
 
 
-def check_xml_var(xml_element):
+def check_xml_var(xml_element, check_for_value_attr):
     """based on type and value present acts as a failsafe for parsing xml variables"""
     type_present = check_for_attrib('type', xml_element)
     value_present = check_for_attrib('value', xml_element)
+
+    if not check_for_value_attr:
+        value_present = True
+
     if not (type_present and value_present):
         raise ValueError(
                 """
