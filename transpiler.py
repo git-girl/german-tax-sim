@@ -31,10 +31,16 @@ def transpile(xml_file_path):
     # print_xml_structure(root)
 
     # This should support multiple constants blocks
+    py_imports = "import numpy as np \n"
     py_consts = transpile_constants(find_uniq_tag('CONSTANTS', tree))
     py_main = transpile_main(find_uniq_tag('MAIN', tree))
 
-    return py_consts + py_main
+    python_code = [
+            py_imports,
+            py_consts,
+            py_main
+            ]
+    return '\n'.join(python_code)
     # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
 
@@ -58,7 +64,9 @@ def find_uniq_tag(tag_name, tree):
 
 def transpile_main(main_root):
     """Transpile the main function, this has some different rules then other bits"""
-    python_code = []
+    python_code = [
+            "\n # main \n"
+            ]
 
     for element in main_root:
         if element.tag == 'EXECUTE':
@@ -80,15 +88,22 @@ def transpile_main(main_root):
 def transpile_constants(constants_root):
     """Takes a single constants root element and transpiles its children to variables"""
 
+    constants_defitions = [
+            "\n # constants_defitions \n"
+            ]
+
     for xml_element in constants_root:
-        if xml_element.tag == 'CONSTANT':
-            xml_var_to_np(xml_element)
-        else:
+        if not xml_element.tag == 'CONSTANT':
             raise ValueError("Child in CONSTANTS node was not of tag type CONSTANT")
 
-    return "TODO"
+        right_side = xml_var_to_right_side_expr(xml_element)
+        left_side = xml_element.attrib.get('name') + " = "
 
-def xml_var_to_np(xml_element):
+        constants_defitions.append(left_side + right_side)
+
+    return '\n'.join(constants_defitions)
+
+def xml_var_to_right_side_expr(xml_element):
     """Takes in xml element with attrib type and value and transforms it into a numpy value"""
     check_xml_var(xml_element)
     xml_dtype = xml_element.attrib.get('type').rstrip()
@@ -106,7 +121,7 @@ def xml_var_to_np(xml_element):
 
         values = "[" + ", ".join(values) + "]"
 
-        return "np.array(" + values + ", dtype=" + dtype + ")"
+        return "np.array(" + values + ", dtype='" + dtype + "')"
 
     if not array_flag:
         value = strip(xml_value, dtype)
@@ -207,7 +222,11 @@ def check_xml_var(xml_element):
     type_present = check_for_attrib('type', xml_element)
     value_present = check_for_attrib('value', xml_element)
     if not (type_present and value_present):
-        sys.exit("ERROR: xml_var_to_np got variable that didnt have type and value attribute")
+        raise ValueError(
+                """
+                xml_var_to_right_side_expr got variable that didnt have type and value attribute
+                """
+                )
 
 def check_for_attrib(attrib, xml_element):
     """takes a string for an attrib key and returns true if its found"""
