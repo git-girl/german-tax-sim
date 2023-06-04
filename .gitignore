@@ -2,5 +2,5 @@
 xml-codes
 .generated
 __pycache__
-_build
+docs/build 
 # not excluding _static or _templates though
