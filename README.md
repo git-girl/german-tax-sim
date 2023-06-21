@@ -8,8 +8,6 @@
 
 ## DevNotes
 
-- TODO: write something on installing cuda for your cuda version i think that is an issue in adoption 
-
 > Important: is it good that i differentiate between transpiling different blocks? 
 - My worry is that I'm introducing a lot of very specific things and that with minor changes 
   like another CONSTANTS block or something like that that I will make everything error prone 
@@ -99,18 +97,9 @@ has bindings for to normal js.
   This would come with some concessions and rules about the XML Input.
   - Pain point: 
     is parsing methods and Syntax in an EXEC and EVAL block
+  - Solution: 
+    Implementing a BigDecimal interface
 
-- Scrap everything so far, fork @mgoltzsche again and implement a python output.
-  - Pain Point:
-    would be a concession to drop the pure python interface which  
-    makes usage tougher. Like you cant just run everything in STATA at that point 
-    for example
-
-- Rewrite everything analogous to @mgoltzsche in python. 
-  - Its proven to work. 
-  - Code Quality itself is good. 
-  - Pain Point: 
-    That Code is not optimized for performance and would need design alterations 
     
 **DESIGN MGOLTZSCHE**:
 - Entry Point is pap-ui.js Exportint PapView

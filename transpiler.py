@@ -37,6 +37,7 @@ def transpile(xml_file_path):
     py_main = transpile_main(xu.find_uniq_tag('MAIN', tree))
     py_internals = transpile_internals(xu.find_uniq_tag('INTERNALS', tree))
     py_methods = transpile_methods(tree.findall('.//' + 'METHOD'))
+    print(py_methods)
 
     python_code = [
             py_imports,
@@ -46,7 +47,6 @@ def transpile(xml_file_path):
             py_methods
             ]
     return '\n'.join(python_code)
-    # TODO: transpile_methods() 
     # TODO: check_all_methods_present()
 
 
@@ -94,7 +94,6 @@ def transpile_eval_exec(xml_exec_code):
     value = strip(raw_right_side, dtype='float64')
 
     transpiled_right =  "np.float64(" + value + ")"
-    print(varname + " = " + transpiled_right)
 
     return varname + " = " + transpiled_right
 
@@ -217,6 +216,7 @@ def strip(xml_value, dtype):
         # 3rd -> anything after BigDecimal.
         regex_patterns = [
                 r"BigDecimal\.valueOf\s+\((.*?)\)",
+                r"BigDecimal\.valueOf\((.*?)\)",
                 r"BigDecimal\((.*?)\)",
                 r"BigDecimal\.(.*)"
                 ]
@@ -264,39 +264,84 @@ def transpile_methods(method_elements):
     """
     Entry point for parsing all METHOD blocks into pythong code
     """
-    for method_element in method_elements:
-
-
-        # TODO: this needs to be moved toward a transpile_method_head
-        method_name = method_element.attrib.get('name').lower()
-        # NOTE: there are no passed args as everything is a global var
-        method_head = "def " + method_name + "():"
-
-
-        print(print_children(method_element))
-
-        # python_code = [
-        #         method_head,
-        #         indent,
-        #         ]
-        # print('\n'.join(python_code))
-
-def print_children(element, indent=""):
-    # TODO : match on tag name
-    # then from match call appropriate transpile method
     python_code = []
 
-    python_code.append(indent + element.tag)
-    print(indent + element.tag)
+    for method_element in method_elements:
 
-    for child in element:
-        print_children(child, indent + "    ")
+        python_code.append(recurse_method_definition(method_element))
 
-    python_code.append(indent + "CLOSE " + element.tag)
-    print(indent + "CLOSE " + element.tag)
-
-    # print(python_code)
     return '\n'.join(python_code)
+
+def recurse_method_definition(element, indent=""):
+    python_code = []
+
+    python_code.append(indent + transpile_element(element))
+    for child in element:
+
+        # NOTE: the issue with then and stuff like this is 
+        # proabably that im not doing anything on the 
+        # closing block like /THEN  -> grep with //THEN
+        if child.tag == "THEN":
+            child_indent = indent
+        else:
+            child_indent = indent + "    "
+
+        transpiled_element = recurse_method_definition(child, child_indent)
+
+        if child.tag == "THEN":
+            python_code.append(indent + "THEN")
+
+        python_code.append(transpiled_element)
+
+    # python_code.append(close_element(element.tag))
+
+    return '\n'.join(python_code)
+
+def close_element(element_tag):
+    """
+    Closes the element. returning the formated string.
+    You could make this generic but then the generated code 
+    would look less nice.
+    """
+    match element_tag:
+        case 'EVAL':
+            return ""
+        case 'EXEC':
+            return ""
+        case _ :
+            return "\n"
+
+def transpile_element(element):
+    """Calls the appropriate transpile Method on the element"""
+    match element.tag:
+        case 'METHOD':
+            method_name = element.attrib.get('name').lower()
+            return "def " + method_name + "():"
+
+        case 'EXEC':
+            method = element.attrib.get('method', '').lower()
+            return f"{method}()"
+
+        # EVAL is the big point -> implement regexes for all method definitions etc.
+        case 'EVAL':
+            xml_exec_code = element.attrib.get('exec', '')
+            if not check_right_side_for_string(xml_exec_code):
+                return xml_exec_code
+
+            return transpile_eval_exec(xml_exec_code)
+        case 'IF':
+            expression = element.attrib.get('expr')
+            return "if " + expression + ":"
+
+        case 'THEN':
+            return ""
+
+        case 'ELSE':
+            return "else: "
+        case _:
+            raise ValueError(
+                    "Tag Element " + element.tag + " couldn't be matched by transpile_elements"
+                    )
 
 def translate_type(xml_dtype):
     """
