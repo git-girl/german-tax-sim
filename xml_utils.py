@@ -1,5 +1,31 @@
 import xml.etree.ElementTree as ET
+import sys
 
+def check_for_attrib(attrib, xml_element):
+    """takes a string for an attrib key and returns true if its found"""
+    attrib_value = xml_element.attrib.get(attrib)
+    if attrib_value is not None:
+        return True
+
+    return False
+
+def find_uniq_tag(tag_name, tree):
+    """
+    Finds uniq tag within tree. Raises error if none found or not unique.
+
+    Args:
+        tag_name (str): the Tag name to search for.
+        tree (xml.etree.ElementTree): The tree to search through.
+
+    Returns:
+        xml.etree.ElementTree.Element
+    """
+    tag_elements = tree.findall('.//' + tag_name)
+    if len(tag_elements) == 1:
+        uniq_tag = tag_elements[0]
+        return uniq_tag
+
+    sys.exit("ERROR: Expected exactly one <",tag_name,"> tag. Found: ", len(tag_elements))
 def print_tags(element):
     """Takes in single element and prints its child tags"""
     print(element.tag)  # Print the tag of the current element

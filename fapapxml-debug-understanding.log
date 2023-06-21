@@ -1,0 +1,4 @@
+pap-ui.js:111 this.state.pap
+pap-ui.js:112 we {name: 'Lohnsteuer2020Big', vars: Array(146), expr: ee, trace: Array(113)}
+pap-ui.js:113 this.state.inputs.createValues(this.inputValues())
+pap-ui.js:114 {af: W, ALTER1: W, ENTSCH: Oe, f: W, JFREIB: Oe, …}

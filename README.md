@@ -6,9 +6,6 @@
 > 5 years (so in 2020 the first 5 years are)
 - this just means that if you are modifying the table you will need to include a BigDecimal.valueOf(0.0) at index 1
 
-
- 
-
 ## DevNotes
 
 - TODO: write something on installing cuda for your cuda version i think that is an issue in adoption 
@@ -80,6 +77,63 @@ _this transpiled code then gets executed_
   - However no need to go overboard here, can also have opt to keep transpiled 
     python file and then people could change that if they want to add a logarithm 
     or something like that
+
+### Transpiler Design
+
+Actually Language considerations again.    
+The Pap XML actually uses Java code. 
+
+There is an implementation of BigDecimal for javascript. 
+Thats what @mgoltzsche uses. So that makes adapting his code to 
+python or to output python code harder or maybe easier if the npm package 
+has bindings for to normal js. 
+
+**STATE**: 
+- I got some points of the transpiler working atm.
+- The remaining parts are harder though
+  - Input and Output variables should be ok 
+  - METHODS is what I'm concerned about.
+
+**AVENUES**:
+- Continue writing regexes.
+  This would come with some concessions and rules about the XML Input.
+  - Pain point: 
+    is parsing methods and Syntax in an EXEC and EVAL block
+
+- Scrap everything so far, fork @mgoltzsche again and implement a python output.
+  - Pain Point:
+    would be a concession to drop the pure python interface which  
+    makes usage tougher. Like you cant just run everything in STATA at that point 
+    for example
+
+- Rewrite everything analogous to @mgoltzsche in python. 
+  - Its proven to work. 
+  - Code Quality itself is good. 
+  - Pain Point: 
+    That Code is not optimized for performance and would need design alterations 
+    
+**DESIGN MGOLTZSCHE**:
+- Entry Point is pap-ui.js Exportint PapView
+  // BTW Lol it always loads Lohnsteuer2021 in the pap-ui.js
+- On submit it takes the state.pap.evaluate(this.state.inputs.createValues)
+- triggers Pap.js -> transpile & evaluate
+- I think he does roughly the same on varDeclarations in pap.js ( for input output i think )
+- does some new Scope thing that just defines some utiltity definitions
+- an expression gets turned into a PapMethodExpression that implents some
+  methodExpression that has a visitor Design Pattern
+
+  PapView.calculate.bind(PapView)
+  let output = PapView.state.pap.evaluate(PapView.state.inputs.createValues(this.inputValues())); // where PapView.state.pap is the output of loadPap(papXMLstr) 
+  loadPap => pap.js => return new PAP(parsePAPXML(xmlStr)); 
+  // parsePAPXML => papparser.js
+  // papparser iterates over children calling transform children with a papChildTransformer based on the tag
+  // Expressions are handled through extast.js
+
+  // At this point everything is transformed and visitible 
+
+  // in pap.js you visit the expression with a PapInterpreter
+  // Im not quite sure how the vistor actually works but ok
+
 
 ## Why and what for? 
 

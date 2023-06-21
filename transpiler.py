@@ -6,7 +6,7 @@ Entrypoint is transpile(xml_file_path)
 import sys
 import re
 import xml.etree.ElementTree as ET
-import xml_utils
+import xml_utils as xu
 
 TYPE_DICT = {
         'double': 'float64',
@@ -27,15 +27,15 @@ def transpile(xml_file_path):
 
     # root = tree.getroot()
     # print_tags(root)
-    xml_utils.print_uniq_types(tree.getroot())
+    # xu.print_uniq_types(tree.getroot())
     # print_uniq_tags(root)
     # print_xml_structure(root)
 
     # This should support multiple constants blocks
     py_imports = "import numpy as np\n"
-    py_consts = transpile_constants(find_uniq_tag('CONSTANTS', tree))
-    py_main = transpile_main(find_uniq_tag('MAIN', tree))
-    py_internals = transpile_internals(find_uniq_tag('INTERNALS', tree))
+    py_consts = transpile_constants(xu.find_uniq_tag('CONSTANTS', tree))
+    py_main = transpile_main(xu.find_uniq_tag('MAIN', tree))
+    py_internals = transpile_internals(xu.find_uniq_tag('INTERNALS', tree))
 
     python_code = [
             py_imports,
@@ -51,26 +51,12 @@ def transpile(xml_file_path):
 def adpot_inputs(inputs_root):
     """Adopts the input variables and their dtypes to be the main entry parameters"""
 
-def find_uniq_tag(tag_name, tree):
-    """
-    Finds uniq tag within tree. Raises error if none found or not unique.
-
-    Args:
-        tag_name (str): the Tag name to search for.
-        tree (xml.etree.ElementTree): The tree to search through.
-
-    Returns:
-        xml.etree.ElementTree.Element
-    """
-    tag_elements = tree.findall('.//' + tag_name)
-    if len(tag_elements) == 1:
-        uniq_tag = tag_elements[0]
-        return uniq_tag
-
-    sys.exit("ERROR: Expected exactly one <",tag_name,"> tag. Found: ", len(tag_elements))
 
 def transpile_main(main_root):
-    """Transpile the main function, this has some different rules then other bits"""
+    """
+    Transpile the main function, this has some different rules then other bits
+    Methods are supposed to be lower_snake_case()
+    """
     main_method = [
             "\n # main\n"
             ]
@@ -80,12 +66,49 @@ def transpile_main(main_root):
             method = element.attrib.get('method', '').lower()
             main_method.append(f"{method}()")
 
-        # TODO : there is an issue here and thense need to get parsed properly
+        # WARNING: eval tags arent assigned types explicitly pray
+        # every value referenced is treated as a float and creation
+        # must be as a float. Sorry
         elif element.tag == 'EVAL':
-            exec_code = element.attrib.get('exec', '').lower()
-            main_method.append(exec_code)
+            xml_exec_code = element.attrib.get('exec', '')
+            if not check_right_side_for_string(xml_exec_code):
+                main_method.append(xml_exec_code)
+            else:
+                main_method.append(transpile_eval_exec(xml_exec_code))
 
     return '\n'.join(main_method)
+
+# TODO: testcases
+# <EVAL exec="KVSATZAN = (KVZ.divide(bd).divide(ZAHL100)).add(BigDecimal.valueOf(0.07))"/>
+def transpile_eval_exec(xml_exec_code):
+    """
+    Takes the xml.attrib exec value and transpiles that code 
+    to python numpy code
+    """
+    parts = xml_exec_code.split("=", 1)
+    varname = parts[0]
+    raw_right_side = parts[1]
+
+    value = strip(raw_right_side, dtype='float64')
+
+    transpiled_right =  "np.float64(" + value + ")"
+    print(varname + " = " + transpiled_right)
+
+    return varname + " = " + transpiled_right
+
+
+def check_right_side_for_string(py_code):
+    """
+    If the right side of a python code bit isnt purely spaces and numbers
+    return True. 
+    Otherwise False.
+    """
+    pattern = r'=\s*\d+\s*$'
+    match = re.search(pattern, py_code)
+    if match:
+        return False
+
+    return True
 
 def transpile_constants(constants_root):
     """Takes a single constants root element and transpiles its children to variables"""
@@ -198,6 +221,7 @@ def strip(xml_value, dtype):
                 # case 3 BigDecimal.THISVALUE is a String that needs to be cast
                 if i == len(regex_patterns):
                     weird_consts = {
+                        "ZERO": "0",
                         "ONE": "1",
                         "TWO": "2",
                         "THREE": "3",
@@ -257,8 +281,8 @@ def translate_type(xml_dtype):
 
 def check_xml_var(xml_element, check_for_value_attr):
     """based on type and value present acts as a failsafe for parsing xml variables"""
-    type_present = check_for_attrib('type', xml_element)
-    value_present = check_for_attrib('value', xml_element)
+    type_present = xu.check_for_attrib('type', xml_element)
+    value_present = xu.check_for_attrib('value', xml_element)
 
     if not check_for_value_attr:
         value_present = True
@@ -269,11 +293,3 @@ def check_xml_var(xml_element, check_for_value_attr):
                 xml_var_to_right_side_expr got variable that didnt have type and value attribute
                 """
                 )
-
-def check_for_attrib(attrib, xml_element):
-    """takes a string for an attrib key and returns true if its found"""
-    attrib_value = xml_element.attrib.get(attrib)
-    if attrib_value is not None:
-        return True
-
-    return False
