@@ -8,6 +8,8 @@ import re
 import xml.etree.ElementTree as ET
 import xml_utils as xu
 
+from java.math import BigDecimal
+
 TYPE_DICT = {
         'double': 'float64',
         'BigDecimal': 'float64',
@@ -65,8 +67,8 @@ def transpile_main(main_root):
 
     for element in main_root:
         if element.tag == 'EXECUTE':
-            method = element.attrib.get('method', '').lower()
-            main_method.append(f"{method}()")
+            method_name = element.attrib.get('method', '').lower()
+            main_method.append(method_name + "()")
 
         # WARNING: eval tags arent assigned types explicitly pray
         # every value referenced is treated as a float and creation
@@ -303,45 +305,44 @@ def close_element(element_tag):
     You could make this generic but then the generated code 
     would look less nice.
     """
-    match element_tag:
-        case 'EVAL':
-            return ""
-        case 'EXEC':
-            return ""
-        case _ :
-            return "\n"
+    if element_tag == 'EVAL':
+        return ""
+    if element_tag == 'EXEC':
+        return ""
+
+    return "\n"
 
 def transpile_element(element):
     """Calls the appropriate transpile Method on the element"""
-    match element.tag:
-        case 'METHOD':
-            method_name = element.attrib.get('name').lower()
-            return "def " + method_name + "():"
 
-        case 'EXEC':
-            method = element.attrib.get('method', '').lower()
-            return f"{method}()"
+    element_tag = element.tag
+    if element_tag == 'METHOD':
+        method_name = element.attrib.get('name').lower()
+        return "def " + method_name + "():"
 
-        # EVAL is the big point -> implement regexes for all method definitions etc.
-        case 'EVAL':
-            xml_exec_code = element.attrib.get('exec', '')
-            if not check_right_side_for_string(xml_exec_code):
-                return xml_exec_code
+    if element_tag == 'EXEC':
+        method_name = element.attrib.get('method', '').lower()
+        return method_name + "()"
 
-            return transpile_eval_exec(xml_exec_code)
-        case 'IF':
-            expression = element.attrib.get('expr')
-            return "if " + expression + ":"
+    # EVAL is the big point -> implement regexes for all method definitions etc.
+    if element_tag == 'EVAL':
+        xml_exec_code = element.attrib.get('exec', '')
+        print(xml_exec_code)
+        if not check_right_side_for_string(xml_exec_code):
+            return xml_exec_code
 
-        case 'THEN':
-            return ""
+        return transpile_eval_exec(xml_exec_code)
+    if element_tag == 'IF':
+        expression = element.attrib.get('expr')
+        return "if " + expression + ":"
 
-        case 'ELSE':
-            return "else: "
-        case _:
-            raise ValueError(
-                    "Tag Element " + element.tag + " couldn't be matched by transpile_elements"
-                    )
+    if element_tag == 'THEN':
+        return ""
+
+    if element_tag == 'ELSE':
+        return "else: "
+
+    raise ValueError( "Tag Element " + element.tag + " couldn't be matched by transpile_elements")
 
 def translate_type(xml_dtype):
     """
