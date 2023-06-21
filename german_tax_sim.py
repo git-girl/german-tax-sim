@@ -14,12 +14,11 @@ def main():
     # def main(xml_file_path: str, df: pd.DataFrame, options: Dict):
 
     code = transpiler.transpile("xml-codes/Lohnsteuer2020.xml.xhtml")
-    # print(code)
     # NOTE: this back and forth to file serves as a means to save the transpiled code
     filepath = write_code_to_file(code)
     print(filepath)
     print(code)
-    exec_file(filepath)
+    # exec_file(filepath)
 
 # TODO: Use a template file that structures the code a bit maybe
 # and handles imports and stuff like that

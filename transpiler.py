@@ -36,12 +36,14 @@ def transpile(xml_file_path):
     py_consts = transpile_constants(xu.find_uniq_tag('CONSTANTS', tree))
     py_main = transpile_main(xu.find_uniq_tag('MAIN', tree))
     py_internals = transpile_internals(xu.find_uniq_tag('INTERNALS', tree))
+    py_methods = transpile_methods(tree.findall('.//' + 'METHOD'))
 
     python_code = [
             py_imports,
             py_consts,
             py_internals,
-            py_main
+            py_main,
+            py_methods
             ]
     return '\n'.join(python_code)
     # TODO: transpile_methods() 
@@ -197,7 +199,16 @@ def xml_var_to_right_side_expr(xml_element, check_for_value_attr):
 # BigDecimal.valueOf(THISVALUE)
 # BigDecimal(THISVALUE)
 def strip(xml_value, dtype):
-    """Takes xml_value and dtype, returns actual numpy variable"""
+    """
+    Takes xml_value and dtype, returns actual numpy variable 
+
+    parses: 
+        BigDecimal.THISVALUE
+        BigDecimal.valueOf(THISVALUE)
+        BigDecimal(THISVALUE)
+    returning: 
+        THISVALUE ready for insert into np.float64(THISVALUE)
+    """
 
     if dtype == 'float64':
 
@@ -249,7 +260,43 @@ def strip(xml_value, dtype):
     # if other dtype
     raise TypeError("strip got an unsupported type")
 
+def transpile_methods(method_elements):
+    """
+    Entry point for parsing all METHOD blocks into pythong code
+    """
+    for method_element in method_elements:
 
+
+        # TODO: this needs to be moved toward a transpile_method_head
+        method_name = method_element.attrib.get('name').lower()
+        # NOTE: there are no passed args as everything is a global var
+        method_head = "def " + method_name + "():"
+
+
+        print(print_children(method_element))
+
+        # python_code = [
+        #         method_head,
+        #         indent,
+        #         ]
+        # print('\n'.join(python_code))
+
+def print_children(element, indent=""):
+    # TODO : match on tag name
+    # then from match call appropriate transpile method
+    python_code = []
+
+    python_code.append(indent + element.tag)
+    print(indent + element.tag)
+
+    for child in element:
+        print_children(child, indent + "    ")
+
+    python_code.append(indent + "CLOSE " + element.tag)
+    print(indent + "CLOSE " + element.tag)
+
+    # print(python_code)
+    return '\n'.join(python_code)
 
 def translate_type(xml_dtype):
     """
